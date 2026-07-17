@@ -15,7 +15,12 @@
     "test:e2e": "playwright test",
     "worker:dev": "tsx watch worker/runner.ts",
     "worker:start": "tsx worker/runner.ts",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "supabase:start": "supabase start -x edge-runtime --yes",
+    "supabase:stop": "supabase stop",
+    "supabase:env": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-local-env.ps1",
+    "supabase:reset": "supabase db reset",
+    "test:db": "supabase test db --local supabase/tests/academic_swarm.sql"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.3",
@@ -49,6 +54,7 @@
     "eslint-config-next": "16.2.10",
     "jsdom": "29.1.1",
     "prettier": "3.9.5",
+    "supabase": "2.109.1",
     "tailwindcss": "4.3.3",
     "tsx": "4.23.1",
     "typescript": "5.9.3",
