@@ -19,18 +19,25 @@ export type OpenAiTool =
       require_approval: "always" | "never";
     };
 
-export function parseMcpServers(raw: string, allowlist: ReadonlySet<string>): McpServerConfig[] {
+export function parseMcpServers(
+  raw: string,
+  allowlist: ReadonlySet<string>,
+): McpServerConfig[] {
   const servers = z.array(mcpServerSchema).max(10).parse(JSON.parse(raw));
   return servers.map((server) => {
     const url = new URL(server.serverUrl);
     if (url.protocol !== "https:") throw new Error("MCP servers require HTTPS");
-    if (url.username || url.password) throw new Error("MCP URLs may not embed credentials");
-    if (!allowlist.has(url.hostname)) throw new Error(`MCP host is not allowlisted: ${url.hostname}`);
+    if (url.username || url.password)
+      throw new Error("MCP URLs may not embed credentials");
+    if (!allowlist.has(url.hostname))
+      throw new Error(`MCP host is not allowlisted: ${url.hostname}`);
     return server;
   });
 }
 
-export function toOpenAiTools(servers: readonly McpServerConfig[]): OpenAiTool[] {
+export function toOpenAiTools(
+  servers: readonly McpServerConfig[],
+): OpenAiTool[] {
   return [
     { type: "web_search" },
     ...servers.map((server) => ({
@@ -38,7 +45,9 @@ export function toOpenAiTools(servers: readonly McpServerConfig[]): OpenAiTool[]
       server_label: server.label,
       server_url: server.serverUrl,
       ...(server.allowedTools ? { allowed_tools: server.allowedTools } : {}),
-      require_approval: server.trusted ? ("never" as const) : ("always" as const),
+      require_approval: server.trusted
+        ? ("never" as const)
+        : ("always" as const),
     })),
   ];
 }

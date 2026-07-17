@@ -7,8 +7,12 @@ $envPath = Join-Path $projectRoot ".env"
 
 Push-Location $projectRoot
 try {
-  $statusOutput = & cmd.exe /d /c "npx supabase status -o json 2>NUL" | Out-String
-  if ($LASTEXITCODE -ne 0) {
+  $ErrorActionPreference = "Continue"
+  $statusOutput = & npx supabase status -o json 2>$null | Out-String
+  $statusExitCode = $LASTEXITCODE
+  $ErrorActionPreference = "Stop"
+
+  if ($statusExitCode -ne 0) {
     throw "Local Supabase is not running. Start Docker Desktop, then run npm run supabase:start."
   }
 

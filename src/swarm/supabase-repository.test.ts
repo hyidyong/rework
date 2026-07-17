@@ -7,7 +7,8 @@ describe("Supabase event persistence boundary", () => {
     const event = sanitizeAgentEvent({
       role: "analyzer",
       state: "thinking",
-      message: "Calling service with Bearer very-secret-token and person@example.com",
+      message:
+        "Calling service with Bearer very-secret-token and person@example.com",
       metadata: {
         queryCount: 3,
         proposalContent: "private proposal",

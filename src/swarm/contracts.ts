@@ -57,7 +57,10 @@ export const debateTurnSchema = z
       (turn.speaker === "debater_a" && turn.stance === "support") ||
       (turn.speaker === "debater_b" && turn.stance === "critique");
     if (!valid) {
-      context.addIssue({ code: "custom", message: "debate speaker and stance do not match" });
+      context.addIssue({
+        code: "custom",
+        message: "debate speaker and stance do not match",
+      });
     }
   });
 

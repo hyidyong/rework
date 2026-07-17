@@ -60,7 +60,8 @@ export class SupabaseSwarmRepository implements SwarmRepository {
   ) {}
 
   async claimNextRun(workerId: string): Promise<RunContext | null> {
-    const rows = await this.sql`select id from private.claim_next_pipeline_run(${workerId})`;
+    const rows = await this
+      .sql`select id from private.claim_next_pipeline_run(${workerId})`;
     const first = rows[0] as { id?: string } | undefined;
     return first?.id ? this.loadRun(first.id) : null;
   }
@@ -73,10 +74,17 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       )
       .eq("id", runId)
       .single();
-    if (error || !data) throw new Error(`Unable to load pipeline run: ${error?.message ?? "not found"}`);
+    if (error || !data)
+      throw new Error(
+        `Unable to load pipeline run: ${error?.message ?? "not found"}`,
+      );
     const row = data as unknown as JoinedRun;
     const proposal = row.proposals;
-    if (!proposal.extracted_content_ciphertext || !proposal.extracted_content_iv || !proposal.extracted_content_tag) {
+    if (
+      !proposal.extracted_content_ciphertext ||
+      !proposal.extracted_content_iv ||
+      !proposal.extracted_content_tag
+    ) {
       throw new Error("Proposal extraction is not available");
     }
     const envelope: CipherEnvelope = {
@@ -91,24 +99,41 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       proposalId: row.proposal_id,
       ownerId: row.owner_id,
       title: proposal.title,
-      proposalText: decryptText(envelope, this.encryptionKey, `${row.owner_id}:${row.proposal_id}`),
+      proposalText: decryptText(
+        envelope,
+        this.encryptionKey,
+        `${row.owner_id}:${row.proposal_id}`,
+      ),
       status: row.status,
     };
   }
 
   async setRunState(
     runId: string,
-    update: { status?: RunContext["status"]; currentStage?: AgentRole; progress?: number; errorMessage?: string | null },
+    update: {
+      status?: RunContext["status"];
+      currentStage?: AgentRole;
+      progress?: number;
+      errorMessage?: string | null;
+    },
   ): Promise<void> {
     const patch = {
       ...(update.status ? { status: update.status } : {}),
       ...(update.currentStage ? { current_stage: update.currentStage } : {}),
       ...(update.progress !== undefined ? { progress: update.progress } : {}),
-      ...(update.errorMessage !== undefined ? { error_message: update.errorMessage } : {}),
-      ...(update.status === "completed" ? { completed_at: new Date().toISOString() } : {}),
+      ...(update.errorMessage !== undefined
+        ? { error_message: update.errorMessage }
+        : {}),
+      ...(update.status === "completed"
+        ? { completed_at: new Date().toISOString() }
+        : {}),
     };
-    const { error } = await this.supabase.from("pipeline_runs").update(patch).eq("id", runId);
-    if (error) throw new Error(`Unable to update pipeline run: ${error.message}`);
+    const { error } = await this.supabase
+      .from("pipeline_runs")
+      .update(patch)
+      .eq("id", runId);
+    if (error)
+      throw new Error(`Unable to update pipeline run: ${error.message}`);
   }
 
   async setAgentState(
@@ -132,7 +157,8 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       },
       { onConflict: "pipeline_run_id,role" },
     );
-    if (error) throw new Error(`Unable to persist agent state: ${error.message}`);
+    if (error)
+      throw new Error(`Unable to persist agent state: ${error.message}`);
   }
 
   async appendEvent(runId: string, input: AgentEventInput): Promise<void> {
@@ -147,7 +173,8 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       message: event.message,
       metadata: event.metadata,
     });
-    if (error) throw new Error(`Unable to append agent event: ${error.message}`);
+    if (error)
+      throw new Error(`Unable to append agent event: ${error.message}`);
   }
 
   async saveRqRecord(runId: string, input: RqRecordInput): Promise<string> {
@@ -166,11 +193,18 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       })
       .select("id")
       .single();
-    if (error || !data) throw new Error(`Unable to save research questions: ${error?.message ?? "no row"}`);
+    if (error || !data)
+      throw new Error(
+        `Unable to save research questions: ${error?.message ?? "no row"}`,
+      );
     return (data as { id: string }).id;
   }
 
-  async saveDebateTurn(runId: string, turn: DebateTurn, turnNumber: number): Promise<void> {
+  async saveDebateTurn(
+    runId: string,
+    turn: DebateTurn,
+    turnNumber: number,
+  ): Promise<void> {
     const run = await this.loadRun(runId);
     const { error } = await this.supabase.from("debate_logs").insert({
       proposal_id: run.proposalId,
@@ -185,7 +219,10 @@ export class SupabaseSwarmRepository implements SwarmRepository {
     if (error) throw new Error(`Unable to save debate turn: ${error.message}`);
   }
 
-  async saveResearchPapers(runId: string, papers: readonly NormalizedPaper[]): Promise<void> {
+  async saveResearchPapers(
+    runId: string,
+    papers: readonly NormalizedPaper[],
+  ): Promise<void> {
     if (papers.length === 0) return;
     const run = await this.loadRun(runId);
     const { error } = await this.supabase.from("research_papers").insert(
@@ -208,10 +245,14 @@ export class SupabaseSwarmRepository implements SwarmRepository {
         metadata: paper.metadata ?? {},
       })),
     );
-    if (error) throw new Error(`Unable to save research papers: ${error.message}`);
+    if (error)
+      throw new Error(`Unable to save research papers: ${error.message}`);
   }
 
-  async saveAdvisorFeedback(runId: string, feedback: AdvisorFeedback): Promise<void> {
+  async saveAdvisorFeedback(
+    runId: string,
+    feedback: AdvisorFeedback,
+  ): Promise<void> {
     const run = await this.loadRun(runId);
     const { error } = await this.supabase.from("advisor_feedbacks").insert({
       proposal_id: run.proposalId,
@@ -222,7 +263,8 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       required_revisions: feedback.requiredRevisions,
       recommendation: feedback.recommendation,
     });
-    if (error) throw new Error(`Unable to save advisor feedback: ${error.message}`);
+    if (error)
+      throw new Error(`Unable to save advisor feedback: ${error.message}`);
   }
 
   async saveFinalPaper(runId: string, paper: FinalPaperInput): Promise<void> {
@@ -243,8 +285,15 @@ export class SupabaseSwarmRepository implements SwarmRepository {
   }
 
   async isCancelled(runId: string): Promise<boolean> {
-    const { data, error } = await this.supabase.from("pipeline_runs").select("status").eq("id", runId).single();
-    if (error || !data) throw new Error(`Unable to read run status: ${error?.message ?? "not found"}`);
+    const { data, error } = await this.supabase
+      .from("pipeline_runs")
+      .select("status")
+      .eq("id", runId)
+      .single();
+    if (error || !data)
+      throw new Error(
+        `Unable to read run status: ${error?.message ?? "not found"}`,
+      );
     return (data as { status: string }).status === "cancelled";
   }
 }

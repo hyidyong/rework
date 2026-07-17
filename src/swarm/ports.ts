@@ -31,7 +31,14 @@ export type RunContext = {
 
 export type AgentEventInput = {
   role: AgentRole;
-  state: "idle" | "thinking" | "researching" | "translating" | "writing" | "completed" | "error";
+  state:
+    | "idle"
+    | "thinking"
+    | "researching"
+    | "translating"
+    | "writing"
+    | "completed"
+    | "error";
   message: string;
   metadata?: Record<string, unknown>;
 };
@@ -73,8 +80,15 @@ export interface SwarmRepository {
   ): Promise<void>;
   appendEvent(runId: string, event: AgentEventInput): Promise<void>;
   saveRqRecord(runId: string, input: RqRecordInput): Promise<string>;
-  saveDebateTurn(runId: string, turn: DebateTurn, turnNumber: number): Promise<void>;
-  saveResearchPapers(runId: string, papers: readonly NormalizedPaper[]): Promise<void>;
+  saveDebateTurn(
+    runId: string,
+    turn: DebateTurn,
+    turnNumber: number,
+  ): Promise<void>;
+  saveResearchPapers(
+    runId: string,
+    papers: readonly NormalizedPaper[],
+  ): Promise<void>;
   saveAdvisorFeedback(runId: string, feedback: AdvisorFeedback): Promise<void>;
   saveFinalPaper(runId: string, paper: FinalPaperInput): Promise<void>;
   isCancelled(runId: string): Promise<boolean>;

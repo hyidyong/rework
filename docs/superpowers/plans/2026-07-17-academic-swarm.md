@@ -23,11 +23,13 @@
 ### Task 1: Scaffold and secure configuration boundary
 
 **Files:**
+
 - Create: `package.json`, Next.js scaffold files, `vitest.config.ts`, `playwright.config.ts`
 - Create: `src/lib/env/schema.ts`, `src/lib/security/envelope.ts`
 - Test: `src/lib/env/schema.test.ts`, `src/lib/security/envelope.test.ts`
 
 **Interfaces:**
+
 - Produces: `readServerEnv(): ServerEnv`, `readPublicEnv(): PublicEnv`, `encryptText(plain, key, aad): CipherEnvelope`, `decryptText(envelope, key, aad): string`.
 
 - [ ] Write tests that reject missing/short secrets, round-trip UTF-8 text, and reject tampered tags.
@@ -39,12 +41,14 @@
 ### Task 2: Supabase schema, RLS, storage, and queue claim
 
 **Files:**
+
 - Create: `supabase/config.toml`
 - Create: `supabase/migrations/20260717000100_academic_swarm.sql`
 - Create: `supabase/tests/academic_swarm.sql`
 - Create: `src/lib/supabase/client.ts`, `server.ts`, `admin.ts`, `database.types.ts`
 
 **Interfaces:**
+
 - Produces: required seven tables plus `pipeline_runs`, `agent_events`, `skill_registry`; private `proposals` bucket; `private.claim_next_pipeline_run(worker_id text)`.
 
 - [ ] Write pgTAP assertions for table presence, constraints, indexed foreign keys, publication membership, storage policies, and cross-user RLS isolation.
@@ -56,11 +60,13 @@
 ### Task 3: Typed agent contracts and prompt registry
 
 **Files:**
+
 - Create: `src/swarm/contracts.ts`, `src/swarm/agents.ts`, `src/swarm/prompts/*.md`
 - Create: `src/swarm/skills/manifest.ts`, `src/swarm/skills/loader.ts`
 - Test: `src/swarm/contracts.test.ts`, `src/swarm/skills/loader.test.ts`
 
 **Interfaces:**
+
 - Produces: role-specific Zod schemas; `AGENT_DEFINITIONS`; `loadRemoteSkill(manifestUrl, fetcher, allowlist): Promise<VerifiedSkill>`.
 
 - [ ] Write tests for all ten displayed agent definitions, strict role outputs, HTTPS/host/size enforcement, and SHA-256 mismatch rejection.
@@ -72,12 +78,14 @@
 ### Task 4: Model, research, MCP, and persistence ports
 
 **Files:**
+
 - Create: `src/swarm/ports.ts`, `src/swarm/openai-gateway.ts`, `src/swarm/mcp-tools.ts`
 - Create: `src/lib/research/crossref.ts`, `openalex.ts`, `normalize.ts`
 - Create: `src/swarm/supabase-repository.ts`, `src/swarm/memory-repository.ts`
 - Test: `src/lib/research/normalize.test.ts`, `src/swarm/openai-gateway.test.ts`, `src/swarm/supabase-repository.test.ts`
 
 **Interfaces:**
+
 - Produces: `ModelGateway.run<T>()`, `ResearchGateway.search()`, `SwarmRepository`, and OpenAI tool definitions for hosted web search plus approved remote MCP servers.
 
 - [ ] Write failing tests for citation deduplication, DOI normalization, structured-output parsing, MCP approval defaults, and sanitized event persistence.
@@ -88,11 +96,13 @@
 ### Task 5: Deterministic swarm orchestration and worker
 
 **Files:**
+
 - Create: `src/swarm/orchestrator.ts`, `src/swarm/stages.ts`, `src/swarm/retry.ts`
 - Create: `worker/runner.ts`
 - Test: `src/swarm/orchestrator.integration.test.ts`, `src/swarm/retry.test.ts`
 
 **Interfaces:**
+
 - Consumes: gateways and repository ports from Task 4.
 - Produces: `runSwarm(runId, deps): Promise<void>` and a process that repeatedly calls `claimNextRun`.
 
@@ -105,12 +115,14 @@
 ### Task 6: Authenticated proposal upload and final-paper APIs
 
 **Files:**
+
 - Create: `src/lib/documents/validate.ts`, `extract.ts`
 - Create: `src/app/api/proposals/route.ts`, `src/app/api/final-papers/[id]/route.ts`
 - Create: `src/proxy.ts`, auth callback and login routes
 - Test: `src/lib/documents/validate.test.ts`, route tests
 
 **Interfaces:**
+
 - Produces: multipart upload returning `{ proposalId, runId }`; authenticated final-paper download returning decrypted Markdown.
 
 - [ ] Write tests for authentication, 20 MB limit, MIME/extension agreement, encrypted storage fields, ownership checks, and missing-record behavior.
@@ -121,11 +133,13 @@
 ### Task 7: Faithful realtime dashboard
 
 **Files:**
+
 - Create: `src/components/workroom/*`, `src/app/page.tsx`, `src/app/globals.css`
 - Create: `src/lib/realtime/use-workroom.ts`, `src/lib/demo/scenario.ts`
 - Test: component tests under `src/components/workroom/*.test.tsx`
 
 **Interfaces:**
+
 - Produces: concept-faithful responsive workroom with demo data fallback and Supabase Realtime subscriptions.
 
 - [ ] Write component tests for all agent names/states, active pulse class, reduced motion, log filters, RQ versions, literature nodes, upload callback, and accessible controls.
@@ -137,11 +151,13 @@
 ### Task 8: Automation, CI, documentation, and release verification
 
 **Files:**
+
 - Create: `scripts/checkpoint.ps1`, `scripts/checkpoint.sh`, `.github/workflows/ci.yml`
 - Create: `.env.example`, `README.md`, `TODO_HUMAN.md`, `docs/SECURITY.md`, `docs/FIDELITY.md`
 - Create: `e2e/workroom.spec.ts`
 
 **Interfaces:**
+
 - Produces: explicit `npm run checkpoint -- "message"` automation, GitHub CI, reproducible setup, and human-only configuration ledger.
 
 - [ ] Write the Playwright happy-path test and a checkpoint-script dry-run test.
@@ -150,4 +166,3 @@
 - [ ] Complete setup, security, deployment, and human-only instructions without embedding credentials.
 - [ ] Run `npm ci`, `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, and `npm run test:e2e` from a clean checkout-equivalent state.
 - [ ] Inspect `git diff`, commit `docs: finalize operations and release gates`, push `origin/main`, and confirm the GitHub branch reflects the final commit.
-

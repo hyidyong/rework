@@ -14,7 +14,9 @@ export type NormalizedPaper = {
   metadata?: Record<string, unknown>;
 };
 
-export function normalizeDoi(value: string | null | undefined): string | undefined {
+export function normalizeDoi(
+  value: string | null | undefined,
+): string | undefined {
   if (!value) return undefined;
   const normalized = value
     .trim()
@@ -32,7 +34,9 @@ function paperKey(paper: NormalizedPaper): string {
   return `title:${paper.title.trim().toLowerCase().replace(/\s+/g, " ")}`;
 }
 
-export function deduplicatePapers(papers: readonly NormalizedPaper[]): NormalizedPaper[] {
+export function deduplicatePapers(
+  papers: readonly NormalizedPaper[],
+): NormalizedPaper[] {
   const byKey = new Map<string, NormalizedPaper>();
   for (const input of papers) {
     const paper = { ...input, doi: normalizeDoi(input.doi) };
@@ -51,10 +55,15 @@ export function deduplicatePapers(papers: readonly NormalizedPaper[]): Normalize
     byKey.set(key, {
       ...paper,
       ...existing,
-      authors: existing.authors.length >= paper.authors.length ? existing.authors : paper.authors,
+      authors:
+        existing.authors.length >= paper.authors.length
+          ? existing.authors
+          : paper.authors,
       sourceDatabase: [...databases].join(", "),
       abstractSummary: existing.abstractSummary ?? paper.abstractSummary,
-      relevanceScore: Math.max(existing.relevanceScore ?? 0, paper.relevanceScore ?? 0) || undefined,
+      relevanceScore:
+        Math.max(existing.relevanceScore ?? 0, paper.relevanceScore ?? 0) ||
+        undefined,
     });
   }
   return [...byKey.values()];

@@ -26,7 +26,9 @@ export class MemorySwarmRepository implements SwarmRepository {
   readonly finalPapers: FinalPaperInput[] = [];
   readonly run: RunContext;
 
-  constructor(input: Omit<RunContext, "status"> & { status?: RunContext["status"] }) {
+  constructor(
+    input: Omit<RunContext, "status"> & { status?: RunContext["status"] },
+  ) {
     this.run = { ...input, status: input.status ?? "queued" };
   }
 
@@ -43,7 +45,12 @@ export class MemorySwarmRepository implements SwarmRepository {
 
   async setRunState(
     runId: string,
-    update: { status?: RunContext["status"]; currentStage?: AgentRole; progress?: number; errorMessage?: string | null },
+    update: {
+      status?: RunContext["status"];
+      currentStage?: AgentRole;
+      progress?: number;
+      errorMessage?: string | null;
+    },
   ): Promise<void> {
     if (runId !== this.run.runId) throw new Error("Run not found");
     if (update.status) this.run.status = update.status;
@@ -69,15 +76,25 @@ export class MemorySwarmRepository implements SwarmRepository {
     return id;
   }
 
-  async saveDebateTurn(_runId: string, turn: DebateTurn, turnNumber: number): Promise<void> {
+  async saveDebateTurn(
+    _runId: string,
+    turn: DebateTurn,
+    turnNumber: number,
+  ): Promise<void> {
     this.debateTurns.push({ ...turn, turnNumber });
   }
 
-  async saveResearchPapers(_runId: string, papers: readonly NormalizedPaper[]): Promise<void> {
+  async saveResearchPapers(
+    _runId: string,
+    papers: readonly NormalizedPaper[],
+  ): Promise<void> {
     this.researchPapers.push(...papers);
   }
 
-  async saveAdvisorFeedback(_runId: string, feedback: AdvisorFeedback): Promise<void> {
+  async saveAdvisorFeedback(
+    _runId: string,
+    feedback: AdvisorFeedback,
+  ): Promise<void> {
     this.advisorFeedbacks.push(feedback);
   }
 

@@ -6,7 +6,8 @@ const encryptionKeySchema = z.string().superRefine((value, context) => {
   if (decoded.length !== 32 || decoded.toString("base64") !== value) {
     context.addIssue({
       code: "custom",
-      message: "DATA_ENCRYPTION_KEY must be a canonical base64 value containing exactly 32 bytes",
+      message:
+        "DATA_ENCRYPTION_KEY must be a canonical base64 value containing exactly 32 bytes",
     });
   }
 });
@@ -30,10 +31,14 @@ export type PublicEnv = z.infer<typeof publicEnvSchema>;
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 export type EnvironmentSource = Record<string, string | undefined>;
 
-export function readPublicEnv(source: EnvironmentSource = process.env): PublicEnv {
+export function readPublicEnv(
+  source: EnvironmentSource = process.env,
+): PublicEnv {
   return publicEnvSchema.parse(source);
 }
 
-export function readServerEnv(source: EnvironmentSource = process.env): ServerEnv {
+export function readServerEnv(
+  source: EnvironmentSource = process.env,
+): ServerEnv {
   return serverEnvSchema.parse(source);
 }

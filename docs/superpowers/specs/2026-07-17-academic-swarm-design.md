@@ -101,4 +101,3 @@ Primary regions are `NavRail`, `CommandBar`, `ProgressStrip`, `AgentPipeline`, `
 ## Human-only operations
 
 Hosted Supabase project creation can incur cost and requires organization selection, so local Supabase is the default development backend. Hosted project selection/creation, OAuth/API keys, domain redirects, and any paid literature database credentials are documented in `TODO_HUMAN.md`; no secret is placed in Git or chat.
-

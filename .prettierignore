@@ -1,0 +1,14 @@
+.next/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+.env*
+supabase/
+schema.sql
+scripts/*.ps1
+docs/design/*.png
+package-lock.json
+src/lib/supabase/database.types.ts
+prompt.md
+AGENTS.md

@@ -5,9 +5,14 @@ import { OpenAIModelGateway } from "./openai-gateway";
 
 describe("OpenAIModelGateway", () => {
   it("initializes lazily and validates the parsed structured output", async () => {
-    const parse = vi.fn().mockResolvedValue({ output_parsed: { answer: "grounded" } });
+    const parse = vi
+      .fn()
+      .mockResolvedValue({ output_parsed: { answer: "grounded" } });
     const factory = vi.fn(() => ({ responses: { parse } }));
-    const gateway = new OpenAIModelGateway({ apiKey: "test-key", model: "test-model" }, factory);
+    const gateway = new OpenAIModelGateway(
+      { apiKey: "test-key", model: "test-model" },
+      factory,
+    );
     const schema = z.object({ answer: z.string().min(3) });
 
     expect(factory).not.toHaveBeenCalled();
@@ -26,7 +31,11 @@ describe("OpenAIModelGateway", () => {
   it("fails closed when the model omits structured output", async () => {
     const gateway = new OpenAIModelGateway(
       { apiKey: "test-key", model: "test-model" },
-      () => ({ responses: { parse: vi.fn().mockResolvedValue({ output_parsed: null }) } }),
+      () => ({
+        responses: {
+          parse: vi.fn().mockResolvedValue({ output_parsed: null }),
+        },
+      }),
     );
 
     await expect(

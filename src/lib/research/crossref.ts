@@ -21,12 +21,19 @@ export async function searchCrossref(
   const url = new URL("https://api.crossref.org/works");
   url.searchParams.set("query.bibliographic", query);
   url.searchParams.set("rows", String(Math.min(Math.max(limit, 1), 20)));
-  url.searchParams.set("select", "title,author,published,container-title,DOI,URL,abstract,score");
+  url.searchParams.set(
+    "select",
+    "title,author,published,container-title,DOI,URL,abstract,score",
+  );
   const response = await fetcher(url, {
-    headers: { "user-agent": "ResearchSwarm/0.1 (mailto:local-development@example.invalid)" },
+    headers: {
+      "user-agent":
+        "ResearchSwarm/0.1 (mailto:local-development@example.invalid)",
+    },
     signal: AbortSignal.timeout(12_000),
   });
-  if (!response.ok) throw new Error(`Crossref request failed with status ${response.status}`);
+  if (!response.ok)
+    throw new Error(`Crossref request failed with status ${response.status}`);
   const payload = (await response.json()) as CrossrefResponse;
   return (payload.message?.items ?? []).flatMap((item) => {
     const title = item.title?.[0]?.trim();
@@ -34,7 +41,9 @@ export async function searchCrossref(
     return [
       {
         title,
-        authors: (item.author ?? []).map(({ given, family }) => [given, family].filter(Boolean).join(" ")),
+        authors: (item.author ?? []).map(({ given, family }) =>
+          [given, family].filter(Boolean).join(" "),
+        ),
         publicationYear: item.published?.["date-parts"]?.[0]?.[0],
         journal: item["container-title"]?.[0],
         doi: item.DOI,
@@ -42,7 +51,10 @@ export async function searchCrossref(
         sourceDatabase: "Crossref",
         region: "international" as const,
         languageCode: "en",
-        abstractSummary: item.abstract?.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+        abstractSummary: item.abstract
+          ?.replace(/<[^>]*>/g, " ")
+          .replace(/\s+/g, " ")
+          .trim(),
         relevanceScore: item.score ? Math.min(item.score / 100, 1) : undefined,
       },
     ];

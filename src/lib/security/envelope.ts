@@ -1,8 +1,4 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-} from "node:crypto";
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 12;
@@ -19,7 +15,9 @@ function decodeKey(base64Key: string): Buffer {
   const key = Buffer.from(base64Key, "base64");
 
   if (key.length !== 32 || key.toString("base64") !== base64Key) {
-    throw new Error("Encryption key must be a canonical base64 value containing exactly 32 bytes");
+    throw new Error(
+      "Encryption key must be a canonical base64 value containing exactly 32 bytes",
+    );
   }
 
   return key;
@@ -70,4 +68,3 @@ export function decryptText(
     decipher.final(),
   ]).toString("utf8");
 }
-

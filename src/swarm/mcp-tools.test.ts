@@ -5,7 +5,9 @@ import { parseMcpServers, toOpenAiTools } from "./mcp-tools";
 describe("MCP tool configuration", () => {
   it("requires approval by default and includes hosted web search", () => {
     const servers = parseMcpServers(
-      JSON.stringify([{ label: "library", serverUrl: "https://mcp.example.edu/sse" }]),
+      JSON.stringify([
+        { label: "library", serverUrl: "https://mcp.example.edu/sse" },
+      ]),
       new Set(["mcp.example.edu"]),
     );
     const tools = toOpenAiTools(servers);
@@ -21,7 +23,9 @@ describe("MCP tool configuration", () => {
   it("rejects untrusted hosts and embedded URL credentials", () => {
     expect(() =>
       parseMcpServers(
-        JSON.stringify([{ label: "bad", serverUrl: "https://user:pass@evil.example/sse" }]),
+        JSON.stringify([
+          { label: "bad", serverUrl: "https://user:pass@evil.example/sse" },
+        ]),
         new Set(["mcp.example.edu"]),
       ),
     ).toThrow();

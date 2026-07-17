@@ -9,10 +9,16 @@ export async function POST(request: Request) {
     if (current.user) return Response.json({ userId: current.user.id });
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error || !data.user) {
-      return Response.json({ error: error?.message ?? "Anonymous sign-in failed" }, { status: 503 });
+      return Response.json(
+        { error: error?.message ?? "Anonymous sign-in failed" },
+        { status: 503 },
+      );
     }
     return Response.json({ userId: data.user.id }, { status: 201 });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Invalid request" }, { status: 403 });
+    return Response.json(
+      { error: error instanceof Error ? error.message : "Invalid request" },
+      { status: 403 },
+    );
   }
 }

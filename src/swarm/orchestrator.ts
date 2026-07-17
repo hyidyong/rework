@@ -40,14 +40,21 @@ async function runAgent<T>(
   dependencies: SwarmDependencies,
 ): Promise<T> {
   const { repository, model } = dependencies;
-  if (await repository.isCancelled(runId)) throw new RunCancelledError("Pipeline run was cancelled");
+  if (await repository.isCancelled(runId))
+    throw new RunCancelledError("Pipeline run was cancelled");
   const definition = AGENT_DEFINITIONS[role];
   await repository.setRunState(runId, {
     status: "running",
     currentStage: role,
     progress: STAGE_PROGRESS[role],
   });
-  await repository.setAgentState(runId, role, definition.defaultState, STAGE_PROGRESS[role], STAGE_TASKS[role]);
+  await repository.setAgentState(
+    runId,
+    role,
+    definition.defaultState,
+    STAGE_PROGRESS[role],
+    STAGE_TASKS[role],
+  );
   await repository.appendEvent(runId, {
     role,
     state: definition.defaultState,
@@ -78,7 +85,10 @@ function paperKey(paper: NormalizedPaper): string {
   return normalizeDoi(paper.doi) ?? paper.url ?? paper.title;
 }
 
-export async function runSwarm(runId: string, dependencies: SwarmDependencies): Promise<void> {
+export async function runSwarm(
+  runId: string,
+  dependencies: SwarmDependencies,
+): Promise<void> {
   const { repository, research, encryptionKey } = dependencies;
   const run = await repository.loadRun(runId);
   let currentRole: AgentRole = "analyzer";
@@ -116,12 +126,19 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
       const support: DebateTurn = await runAgent(
         runId,
         (currentRole = "debater_a"),
-        { round, researchQuestions: initialRq.researchQuestions, history: debateHistory },
+        {
+          round,
+          researchQuestions: initialRq.researchQuestions,
+          history: debateHistory,
+        },
         debateTurnSchema,
         dependencies,
       );
       if (support.round !== round || support.speaker !== "debater_a") {
-        throw Object.assign(new Error("Debater A returned an invalid round identity"), { retryable: false });
+        throw Object.assign(
+          new Error("Debater A returned an invalid round identity"),
+          { retryable: false },
+        );
       }
       debateHistory.push(support);
       await repository.saveDebateTurn(runId, support, round * 2 - 1);
@@ -129,12 +146,19 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
       const critique: DebateTurn = await runAgent(
         runId,
         (currentRole = "debater_b"),
-        { round, researchQuestions: initialRq.researchQuestions, history: debateHistory },
+        {
+          round,
+          researchQuestions: initialRq.researchQuestions,
+          history: debateHistory,
+        },
         debateTurnSchema,
         dependencies,
       );
       if (critique.round !== round || critique.speaker !== "debater_b") {
-        throw Object.assign(new Error("Debater B returned an invalid round identity"), { retryable: false });
+        throw Object.assign(
+          new Error("Debater B returned an invalid round identity"),
+          { retryable: false },
+        );
       }
       debateHistory.push(critique);
       await repository.saveDebateTurn(runId, critique, round * 2);
@@ -147,10 +171,13 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
       literaturePlanSchema,
       dependencies,
     );
-    const papers = await withRetry(() => research.search(literaturePlan.searchQueries), {
-      attempts: 2,
-      baseDelayMs: 500,
-    });
+    const papers = await withRetry(
+      () => research.search(literaturePlan.searchQueries),
+      {
+        attempts: 2,
+        baseDelayMs: 500,
+      },
+    );
     await repository.appendEvent(runId, {
       role: "literature_researcher",
       state: "researching",
@@ -172,7 +199,12 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
       translationAnalysisSchema,
       dependencies,
     );
-    const translations = new Map(translation.translations.map((item) => [item.paperKey, item.koreanSummary]));
+    const translations = new Map(
+      translation.translations.map((item) => [
+        item.paperKey,
+        item.koreanSummary,
+      ]),
+    );
     const translatedPapers = papers.map((paper) => ({
       ...paper,
       translatedSummary: translations.get(paperKey(paper)),
@@ -202,7 +234,13 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
     const advisor = await runAgent(
       runId,
       (currentRole = "academic_advisor"),
-      { analysis, direction, validatedRq, debateHistory, papers: translatedPapers },
+      {
+        analysis,
+        direction,
+        validatedRq,
+        debateHistory,
+        papers: translatedPapers,
+      },
       advisorFeedbackSchema,
       dependencies,
     );
@@ -211,7 +249,13 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
     const finalPaper = await runAgent(
       runId,
       (currentRole = "main_writer"),
-      { proposalTitle: run.title, analysis, validatedRq, advisor, papers: translatedPapers },
+      {
+        proposalTitle: run.title,
+        analysis,
+        validatedRq,
+        advisor,
+        papers: translatedPapers,
+      },
       finalPaperSchema,
       dependencies,
     );
@@ -227,7 +271,11 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
       envelope,
       status: "final",
     });
-    await repository.setRunState(runId, { status: "completed", progress: 100, errorMessage: null });
+    await repository.setRunState(runId, {
+      status: "completed",
+      progress: 100,
+      errorMessage: null,
+    });
   } catch (error) {
     const cancelled = error instanceof RunCancelledError;
     await repository.setAgentState(
@@ -240,12 +288,20 @@ export async function runSwarm(runId: string, dependencies: SwarmDependencies): 
     await repository.appendEvent(runId, {
       role: currentRole,
       state: cancelled ? "idle" : "error",
-      message: cancelled ? "파이프라인 실행이 취소되었습니다." : `${AGENT_DEFINITIONS[currentRole].displayName} 단계가 실패했습니다.`,
-      metadata: { errorType: error instanceof Error ? error.name : "UnknownError" },
+      message: cancelled
+        ? "파이프라인 실행이 취소되었습니다."
+        : `${AGENT_DEFINITIONS[currentRole].displayName} 단계가 실패했습니다.`,
+      metadata: {
+        errorType: error instanceof Error ? error.name : "UnknownError",
+      },
     });
     await repository.setRunState(runId, {
       status: cancelled ? "cancelled" : "failed",
-      errorMessage: cancelled ? null : error instanceof Error ? error.message.slice(0, 1000) : "Unknown error",
+      errorMessage: cancelled
+        ? null
+        : error instanceof Error
+          ? error.message.slice(0, 1000)
+          : "Unknown error",
     });
     if (!cancelled) throw error;
   }

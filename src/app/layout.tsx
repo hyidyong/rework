@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "RE:SEARCH | Academic Swarm Workroom",
-  description: "계획서 분석부터 최종 논문까지 추적하는 로컬 우선 학술 에이전트 워룸",
+  description:
+    "계획서 분석부터 최종 논문까지 추적하는 로컬 우선 학술 에이전트 워룸",
 };
 
 export default function RootLayout({

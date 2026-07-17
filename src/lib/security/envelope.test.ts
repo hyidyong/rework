@@ -25,9 +25,12 @@ describe("AES-GCM envelope", () => {
   });
 
   it("rejects decryption under different associated data", () => {
-    const encrypted = encryptText("sensitive proposal", key, "owner-1:proposal-1");
+    const encrypted = encryptText(
+      "sensitive proposal",
+      key,
+      "owner-1:proposal-1",
+    );
 
     expect(() => decryptText(encrypted, key, "owner-2:proposal-1")).toThrow();
   });
 });
-

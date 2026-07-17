@@ -9,6 +9,8 @@ describe("extractProposalText", () => {
       "text/plain",
     );
     expect(text).toBe("제목\n\n연구 질문");
-    await expect(extractProposalText(new Uint8Array(), "text/plain")).rejects.toThrow(/empty/i);
+    await expect(
+      extractProposalText(new Uint8Array(), "text/plain"),
+    ).rejects.toThrow(/empty/i);
   });
 });

@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import { MAX_PROPOSAL_BYTES, validateProposalUpload } from "./validate";
 
-const textBytes = new TextEncoder().encode("# 연구 계획\n검증 가능한 연구 질문을 설계한다.");
+const textBytes = new TextEncoder().encode(
+  "# 연구 계획\n검증 가능한 연구 질문을 설계한다.",
+);
 
 describe("validateProposalUpload", () => {
   it("accepts a matching UTF-8 Markdown upload", () => {
@@ -13,7 +15,11 @@ describe("validateProposalUpload", () => {
         size: textBytes.byteLength,
         bytes: textBytes,
       }),
-    ).toMatchObject({ extension: ".md", mimeType: "text/markdown", safeFilename: "proposal.md" });
+    ).toMatchObject({
+      extension: ".md",
+      mimeType: "text/markdown",
+      safeFilename: "proposal.md",
+    });
   });
 
   it("rejects files above 20 MiB", () => {

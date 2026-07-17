@@ -5,7 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import { loadRemoteSkill } from "./loader";
 
 function response(body: string, contentType = "application/json") {
-  return new Response(body, { headers: { "content-type": contentType }, status: 200 });
+  return new Response(body, {
+    headers: { "content-type": contentType },
+    status: 200,
+  });
 }
 
 describe("loadRemoteSkill", () => {
@@ -41,7 +44,9 @@ describe("loadRemoteSkill", () => {
     "http://skills.example.edu/manifest.json",
     "https://untrusted.example/manifest.json",
   ])("rejects an unsafe manifest URL: %s", async (url) => {
-    await expect(loadRemoteSkill(url, vi.fn(), new Set(["skills.example.edu"]))).rejects.toThrow();
+    await expect(
+      loadRemoteSkill(url, vi.fn(), new Set(["skills.example.edu"])),
+    ).rejects.toThrow();
   });
 
   it("rejects a SHA-256 mismatch", async () => {

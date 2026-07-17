@@ -18,7 +18,11 @@ describe("academic agent contracts", () => {
       "main_writer",
     ]);
     expect(Object.keys(AGENT_DEFINITIONS)).toHaveLength(10);
-    expect(Object.values(AGENT_DEFINITIONS).every((agent) => agent.systemPrompt.length > 80)).toBe(true);
+    expect(
+      Object.values(AGENT_DEFINITIONS).every(
+        (agent) => agent.systemPrompt.length > 80,
+      ),
+    ).toBe(true);
   });
 
   it("rejects an imprecise research-question payload", () => {

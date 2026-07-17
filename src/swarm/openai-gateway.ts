@@ -29,7 +29,8 @@ export class OpenAIModelGateway implements ModelGateway {
   ) {}
 
   private getClient(): ResponsesClient {
-    if (!this.options.apiKey) throw new Error("OPENAI_API_KEY is required for live model execution");
+    if (!this.options.apiKey)
+      throw new Error("OPENAI_API_KEY is required for live model execution");
     this.client ??= this.clientFactory(this.options.apiKey);
     return this.client;
   }
@@ -39,12 +40,19 @@ export class OpenAIModelGateway implements ModelGateway {
       model: this.options.model,
       instructions: request.systemPrompt,
       input: JSON.stringify(request.input),
-      text: { format: zodTextFormat(request.outputSchema, `${request.role}_output`) },
+      text: {
+        format: zodTextFormat(request.outputSchema, `${request.role}_output`),
+      },
       tools: toOpenAiTools(this.options.mcpServers ?? []),
       store: false,
     });
-    if (response.output_parsed === null || response.output_parsed === undefined) {
-      throw new Error(`Model did not return structured output for ${request.role}`);
+    if (
+      response.output_parsed === null ||
+      response.output_parsed === undefined
+    ) {
+      throw new Error(
+        `Model did not return structured output for ${request.role}`,
+      );
     }
     return request.outputSchema.parse(response.output_parsed);
   }
