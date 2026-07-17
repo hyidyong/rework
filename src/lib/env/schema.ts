@@ -18,7 +18,8 @@ const publicEnvSchema = z.object({
 
 const serverEnvSchema = publicEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
-  OPENAI_API_KEY: z.string().min(20),
+  SUPABASE_DB_URL: z.string().min(20).optional(),
+  OPENAI_API_KEY: z.union([z.string().min(20), z.literal("")]).default(""),
   DATA_ENCRYPTION_KEY: encryptionKeySchema,
   OPENAI_MODEL: z.string().min(1).default("gpt-5.6-terra"),
   MCP_SERVERS_JSON: z.string().default("[]"),
@@ -36,4 +37,3 @@ export function readPublicEnv(source: EnvironmentSource = process.env): PublicEn
 export function readServerEnv(source: EnvironmentSource = process.env): ServerEnv {
   return serverEnvSchema.parse(source);
 }
-
