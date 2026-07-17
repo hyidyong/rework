@@ -57,7 +57,11 @@ function sanitizeFilename(rawName: string, extension: string): string {
   const stem = basename.slice(0, -extension.length);
   const safeStem = stem
     .normalize("NFKC")
+    // Supabase Storage object keys must remain ASCII-safe. Keep the original
+    // filename separately in the proposal record, but use an ASCII key here.
+    .replace(/[^\x00-\x7F]/g, "")
     .replace(/\s+/gu, "_")
+    .replace(/_+/g, "_")
     .replace(/[^\p{L}\p{N}._-]/gu, "")
     .replace(/\.{2,}/g, ".")
     .slice(0, 120)

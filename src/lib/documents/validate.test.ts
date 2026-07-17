@@ -63,6 +63,17 @@ describe("validateProposalUpload", () => {
         size: textBytes.byteLength,
         bytes: textBytes,
       }).safeFilename,
-    ).toBe("나의_계획서_.txt");
+    ).toBe("proposal.txt");
+  });
+  it("uses an ASCII storage filename for non-Latin document names", () => {
+    const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
+    expect(
+      validateProposalUpload({
+        name: "AI_스포츠_승부예측_플랫폼_최종_연구계획서.docx",
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        size: bytes.byteLength,
+        bytes,
+      }).safeFilename,
+    ).toBe("AI_.docx");
   });
 });
