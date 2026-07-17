@@ -10,8 +10,9 @@ test-results/
 .supabase/
 supabase/.branches/
 supabase/.temp/
+.vercel/
 *.log
+*.tsbuildinfo
 tmp/
 .DS_Store
 Thumbs.db
-
