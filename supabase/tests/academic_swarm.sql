@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(17);
 
 select ok(to_regclass('public.proposals') is not null, 'proposals table exists');
 select ok(to_regclass('public.pipeline_runs') is not null, 'pipeline_runs table exists');
@@ -67,6 +67,11 @@ select ok(
 select ok(
   to_regclass('public.pipeline_runs_pending_idx') is not null,
   'pending queue has a partial index'
+);
+
+select ok(
+  has_table_privilege('service_role', 'public.proposals', 'insert'),
+  'service role can create proposal records'
 );
 
 select * from finish();
