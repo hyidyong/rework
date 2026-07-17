@@ -8,10 +8,12 @@ import { encryptText } from "@/lib/security/envelope";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { AGENT_SEQUENCE } from "@/swarm/agents";
+import { WRITING_BRIEF_MARKER } from "@/swarm/writing-spec";
 
 export const runtime = "nodejs";
 
 const titleSchema = z.string().trim().min(3).max(300);
+const writingBriefSchema = z.string().trim().max(5_000);
 
 function responseError(error: unknown) {
   const message =
@@ -49,6 +51,10 @@ export async function POST(request: Request) {
       bytes,
     });
     const extractedText = await extractProposalText(bytes, validated.mimeType);
+    const requestedBrief = form.get("writingBrief");
+    const writingBrief = writingBriefSchema.parse(
+      typeof requestedBrief === "string" ? requestedBrief : "",
+    );
     const requestedTitle = form.get("title");
     const fallbackTitle = validated.safeFilename
       .slice(0, -validated.extension.length)
@@ -65,7 +71,9 @@ export async function POST(request: Request) {
     const runId = crypto.randomUUID();
     uploadedPath = `${authData.user.id}/${proposalId}/${validated.safeFilename}`;
     const envelope = encryptText(
-      extractedText,
+      writingBrief
+        ? `${extractedText}\n\n${WRITING_BRIEF_MARKER}\n${writingBrief}`
+        : extractedText,
       env.DATA_ENCRYPTION_KEY,
       `${authData.user.id}:${proposalId}`,
     );

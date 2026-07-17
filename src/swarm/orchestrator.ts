@@ -20,6 +20,7 @@ import {
 import type { ModelGateway, ResearchGateway, SwarmRepository } from "./ports";
 import { withRetry } from "./retry";
 import { STAGE_PROGRESS, STAGE_TASKS } from "./stages";
+import { MAIN_WRITER_QUALITY_RULES } from "./writing-spec";
 
 export type SwarmDependencies = {
   repository: SwarmRepository;
@@ -65,7 +66,10 @@ async function runAgent<T>(
     () =>
       model.run({
         role,
-        systemPrompt: definition.systemPrompt,
+        systemPrompt:
+          role === "main_writer"
+            ? `${definition.systemPrompt}\n\n${MAIN_WRITER_QUALITY_RULES}`
+            : definition.systemPrompt,
         input,
         outputSchema: schema,
       }),
@@ -255,6 +259,7 @@ export async function runSwarm(
         validatedRq,
         advisor,
         papers: translatedPapers,
+        writingBrief: run.writingBrief ?? "",
       },
       finalPaperSchema,
       dependencies,

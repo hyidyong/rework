@@ -26,6 +26,7 @@ export type RunContext = {
   ownerId: string;
   title: string;
   proposalText: string;
+  writingBrief?: string;
   status: "queued" | "running" | "completed" | "failed" | "cancelled";
 };
 

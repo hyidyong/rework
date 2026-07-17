@@ -11,9 +11,11 @@ import type { ModelGateway, ModelRunRequest, ResearchGateway } from "./ports";
 
 class FixtureModel implements ModelGateway {
   readonly calls: AgentRole[] = [];
+  readonly requests: ModelRunRequest<unknown>[] = [];
 
   async run<T>(request: ModelRunRequest<T>): Promise<T> {
     this.calls.push(request.role);
+    this.requests.push(request as ModelRunRequest<unknown>);
     const input = request.input as { round?: number };
     const fixtures: Record<AgentRole, unknown> = {
       analyzer: {
@@ -161,6 +163,8 @@ describe("runSwarm", () => {
       ownerId: "owner-1",
       title: "AI 연구 계획",
       proposalText: "공공 연구기관의 생성형 AI 도입 효과를 분석한다.",
+      writingBrief:
+        "분량은 A4 20쪽 내외로 하고, 비교법 검토와 APA 7 참고문헌을 포함한다.",
     });
     const model = new FixtureModel();
     const encryptionKey = Buffer.alloc(32, 9).toString("base64");
@@ -205,6 +209,12 @@ describe("runSwarm", () => {
       ),
     ).toContain("## 3. 연구방법");
     expect(repository.run.status).toBe("completed");
+    expect(
+      (
+        model.requests.find((request) => request.role === "main_writer")
+          ?.input as { writingBrief?: string }
+      ).writingBrief,
+    ).toContain("A4 20쪽");
     expect(
       [...repository.agentStatuses.values()].every(
         ({ state }) => state === "completed",

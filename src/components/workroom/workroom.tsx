@@ -8,12 +8,14 @@ import type { PublicEnv } from "@/lib/env/schema";
 import type { AgentRole } from "@/swarm/contracts";
 
 import { AgentSwarm } from "./agent-swarm";
+import { FinalPaperPanel } from "./final-paper-panel";
 import { LiteratureMap } from "./literature-map";
 import { LiveLogs } from "./live-logs";
 import { RqEvolution } from "./rq-evolution";
 import { SelectedAgent } from "./selected-agent";
 import { Sidebar } from "./sidebar";
 import { UploadButton } from "./upload-button";
+import { WritingBrief } from "./writing-brief";
 
 const legend = [
   "idle",
@@ -25,7 +27,9 @@ const legend = [
 ] as const;
 
 export function Workroom({ supabaseConfig }: { supabaseConfig: PublicEnv }) {
-  const { scenario, uploadProposal } = useWorkroom(supabaseConfig);
+  const { scenario, uploadProposal, readFinalPaper } =
+    useWorkroom(supabaseConfig);
+  const [writingBrief, setWritingBrief] = useState("");
   const workroomRef = useRef<HTMLElement>(null);
   useEffect(() => {
     workroomRef.current?.setAttribute("data-hydrated", "true");
@@ -60,7 +64,10 @@ export function Workroom({ supabaseConfig }: { supabaseConfig: PublicEnv }) {
               <ShieldCheck size={16} />
               로컬 보안 연결
             </span>
-            <UploadButton onUpload={uploadProposal} />
+            <UploadButton
+              onUpload={uploadProposal}
+              writingBrief={writingBrief}
+            />
           </div>
         </header>
         <section
@@ -88,6 +95,7 @@ export function Workroom({ supabaseConfig }: { supabaseConfig: PublicEnv }) {
                 : "DEMO DATA"}
           </span>
         </section>
+        <WritingBrief value={writingBrief} onChange={setWritingBrief} />
         <div className="workspace-grid">
           <AgentSwarm
             agents={scenario.agents}
@@ -105,6 +113,10 @@ export function Workroom({ supabaseConfig }: { supabaseConfig: PublicEnv }) {
               paperCount={scenario.paperCount}
             />
           </div>
+          <FinalPaperPanel
+            paper={scenario.finalPaper}
+            onView={readFinalPaper}
+          />
         </div>
         <footer className="app-footer">
           <span>RE:SEARCH · Local-first academic orchestration</span>

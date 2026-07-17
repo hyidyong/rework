@@ -5,8 +5,10 @@ import { useRef, useState } from "react";
 
 export function UploadButton({
   onUpload,
+  writingBrief,
 }: {
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File, writingBrief: string) => Promise<void>;
+  writingBrief: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "done" | "error">(
@@ -16,7 +18,7 @@ export function UploadButton({
     if (!file) return;
     setStatus("uploading");
     try {
-      await onUpload(file);
+      await onUpload(file, writingBrief);
       setStatus("done");
     } catch {
       setStatus("error");

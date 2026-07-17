@@ -2,6 +2,7 @@ import { readServerEnv } from "@/lib/env/schema";
 import { decryptText } from "@/lib/security/envelope";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { buildFinalPaperDocx } from "@/lib/documents/final-paper-docx";
 
 export const runtime = "nodejs";
 
@@ -14,10 +15,11 @@ type FinalPaperRow = {
   body_ciphertext: string;
   body_iv: string;
   body_tag: string;
+  abstract: string;
 };
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createServerSupabaseClient();
@@ -32,7 +34,7 @@ export async function GET(
   const { data, error } = await admin
     .from("final_papers")
     .select(
-      "id, owner_id, proposal_id, version, title, body_ciphertext, body_iv, body_tag",
+      "id, owner_id, proposal_id, version, title, abstract, body_ciphertext, body_iv, body_tag",
     )
     .eq("id", id)
     .eq("owner_id", authData.user.id)
@@ -54,6 +56,22 @@ export async function GET(
   );
   const filename =
     row.title.replace(/[^\p{L}\p{N}._-]+/gu, "_").slice(0, 100) || "paper";
+  if (new URL(request.url).searchParams.get("format") === "docx") {
+    const document = await buildFinalPaperDocx({
+      title: row.title,
+      abstract: row.abstract,
+      markdown,
+    });
+    return new Response(new Uint8Array(document).buffer, {
+      headers: {
+        "content-type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(filename)}.docx`,
+        "cache-control": "no-store, private",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  }
   return new Response(markdown, {
     headers: {
       "content-type": "text/markdown; charset=utf-8",

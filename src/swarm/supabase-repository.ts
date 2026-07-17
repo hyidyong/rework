@@ -12,6 +12,7 @@ import type {
   RunContext,
   SwarmRepository,
 } from "./ports";
+import { WRITING_BRIEF_MARKER } from "./writing-spec";
 
 const SENSITIVE_KEY = /content|prompt|secret|key|token|body|cipher|abstract/i;
 
@@ -36,6 +37,15 @@ export function sanitizeAgentEvent(event: AgentEventInput): AgentEventInput {
       .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[EMAIL]")
       .slice(0, 1000),
     metadata: sanitizeValue(event.metadata ?? {}) as Record<string, unknown>,
+  };
+}
+
+function splitWritingBrief(value: string) {
+  const markerIndex = value.lastIndexOf(`\n\n${WRITING_BRIEF_MARKER}\n`);
+  if (markerIndex === -1) return { proposalText: value, writingBrief: "" };
+  return {
+    proposalText: value.slice(0, markerIndex),
+    writingBrief: value.slice(markerIndex + WRITING_BRIEF_MARKER.length + 3),
   };
 }
 
@@ -94,16 +104,19 @@ export class SupabaseSwarmRepository implements SwarmRepository {
       iv: proposal.extracted_content_iv,
       tag: proposal.extracted_content_tag,
     };
+    const decryptedProposal = decryptText(
+      envelope,
+      this.encryptionKey,
+      `${row.owner_id}:${row.proposal_id}`,
+    );
+    const payload = splitWritingBrief(decryptedProposal);
     return {
       runId: row.id,
       proposalId: row.proposal_id,
       ownerId: row.owner_id,
       title: proposal.title,
-      proposalText: decryptText(
-        envelope,
-        this.encryptionKey,
-        `${row.owner_id}:${row.proposal_id}`,
-      ),
+      proposalText: payload.proposalText,
+      writingBrief: payload.writingBrief,
       status: row.status,
     };
   }

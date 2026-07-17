@@ -49,6 +49,13 @@ export type LiteratureNode = {
   url?: string;
 };
 
+export type FinalPaperView = {
+  id: string;
+  title: string;
+  abstract: string;
+  version: number;
+};
+
 export type WorkroomScenario = {
   projectTitle: string;
   overallProgress: number;
@@ -58,6 +65,7 @@ export type WorkroomScenario = {
   rqVersions: RqVersion[];
   literature: LiteratureNode[];
   paperCount: number;
+  finalPaper?: FinalPaperView;
 };
 
 export const DEMO_SCENARIO: WorkroomScenario = {

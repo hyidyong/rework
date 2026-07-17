@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DEMO_SCENARIO,
   type AgentView,
+  type FinalPaperView,
   type LiteratureNode,
   type RqVersion,
   type WorkroomLog,
@@ -45,6 +46,7 @@ type PaperRow = {
   url: string | null;
   relevance_score: number | null;
 };
+type FinalPaperRow = FinalPaperView;
 
 function timeLabel(value: string): string {
   return new Intl.DateTimeFormat("ko-KR", {
@@ -113,8 +115,8 @@ export function useWorkroom(supabaseConfig: PublicEnv) {
       .limit(1);
     const run = runs?.[0] as RunRow | undefined;
     if (!run) return;
-    const [agentResult, eventResult, rqResult, paperResult] = await Promise.all(
-      [
+    const [agentResult, eventResult, rqResult, paperResult, finalPaperResult] =
+      await Promise.all([
         supabase
           .from("agent_status")
           .select("role,state,progress,current_task")
@@ -136,8 +138,13 @@ export function useWorkroom(supabaseConfig: PublicEnv) {
           .eq("pipeline_run_id", run.id)
           .order("relevance_score", { ascending: false })
           .limit(20),
-      ],
-    );
+        supabase
+          .from("final_papers")
+          .select("id,title,abstract,version")
+          .eq("pipeline_run_id", run.id)
+          .order("version", { ascending: false })
+          .limit(1),
+      ]);
     const agentRows = (agentResult.data ?? []) as AgentRow[];
     const agents = DEMO_SCENARIO.agents.map((agent) => {
       const live = agentRows.find((row) => row.role === agent.role);
@@ -194,6 +201,7 @@ export function useWorkroom(supabaseConfig: PublicEnv) {
         : DEMO_SCENARIO.rqVersions.slice(-1),
       literature: literatureNodes(papers),
       paperCount: papers.length,
+      finalPaper: finalPaperResult.data?.[0] as FinalPaperRow | undefined,
     });
   }, [supabaseConfig]);
 
@@ -264,10 +272,11 @@ export function useWorkroom(supabaseConfig: PublicEnv) {
   }, [ensureAuthenticated, refresh, supabaseConfig]);
 
   const uploadProposal = useCallback(
-    async (file: File) => {
+    async (file: File, writingBrief: string) => {
       await ensureAuthenticated();
       const form = new FormData();
       form.set("file", file);
+      form.set("writingBrief", writingBrief);
       const response = await fetch("/api/proposals", {
         method: "POST",
         body: form,
@@ -281,5 +290,13 @@ export function useWorkroom(supabaseConfig: PublicEnv) {
     [ensureAuthenticated, refresh],
   );
 
-  return { scenario, uploadProposal };
+  const readFinalPaper = useCallback(async (id: string) => {
+    const response = await fetch(`/api/final-papers/${id}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error("Final paper could not be loaded");
+    return response.text();
+  }, []);
+
+  return { scenario, uploadProposal, readFinalPaper };
 }
